@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f1115">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Memory Dojo">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
+<title>Memory Dojo</title>
+<style>
+:root{--bg:#0f1115;--card:#181b22;--card2:#20242d;--text:#e8eaf0;--muted:#8b92a3;--accent:#7c9cff;--good:#4cc38a;--bad:#ef5d5d;--line:#2a2f3a}
+@media (prefers-color-scheme: light){:root{--bg:#f5f6f8;--card:#fff;--card2:#eef0f4;--text:#14161b;--muted:#5f6675;--line:#dde1e8}}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text)}
+body{font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-tap-highlight-color:transparent}
+#app{max-width:520px;margin:0 auto;padding:16px;padding-top:calc(16px + env(safe-area-inset-top));padding-bottom:calc(32px + env(safe-area-inset-bottom))}
+button{font:inherit;color:inherit;border:0;cursor:pointer}
+.muted{color:var(--muted)}.small{font-size:13px}.center{text-align:center}
+.top{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.top h2{margin:0;font-size:20px}
+.back{background:none;color:var(--accent);padding:8px 8px 8px 0;font-size:16px}
+.hero{display:flex;justify-content:space-between;align-items:flex-end;margin:8px 0 10px}
+.h1{font-size:28px;font-weight:700}
+.streak{font-size:22px;font-weight:700;background:var(--card);padding:6px 12px;border-radius:12px}
+.bar,.timer{height:8px;background:var(--card2);border-radius:99px;overflow:hidden;margin:6px 0}
+.bar i,.timer i{display:block;height:100%;background:var(--accent);border-radius:99px;transition:width .2s linear}
+.sect{font-weight:600;margin:18px 0 8px}
+.quest{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--card);padding:14px;border-radius:14px;margin-bottom:8px;border:1px solid var(--line)}
+.quest.done{opacity:.6}
+.qi{font-size:26px;width:36px;text-align:center}
+.qt{flex:1;display:flex;flex-direction:column}
+.qc{font-size:20px;color:var(--muted)}
+.quest.done .qc{color:var(--good)}
+.primary,.ghost,.good,.bad{display:block;width:100%;padding:14px;border-radius:12px;font-weight:600;margin-top:10px}
+.primary{background:var(--accent);color:#0b0d12}
+.ghost{background:var(--card2)}
+.good{background:var(--good);color:#06120c}
+.bad{background:var(--bad);color:#1a0606}
+.danger{color:var(--bad)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-top:12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(62px,1fr));gap:8px;margin:12px 0}
+.tile{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:32px;background:var(--card);border-radius:12px;border:2px solid transparent}
+.tile.sel{border-color:var(--accent);background:var(--card2)}
+.tile.good{border-color:var(--good)}
+.tile.bad{border-color:var(--bad);opacity:.8}
+.tile.miss{border-color:var(--muted);border-style:dashed}
+.tile.dim{opacity:.3}
+.result{text-align:center;background:var(--card);border-radius:14px;padding:18px;margin:8px 0}
+.big{font-size:36px;font-weight:700}
+.g{color:var(--good)}.r{color:var(--bad)}
+.digits{font-size:38px;font-weight:700;letter-spacing:4px;text-align:center;margin:28px 0;font-variant-numeric:tabular-nums;min-height:52px}
+.digits.small{font-size:24px;margin:10px 0}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.pad button{background:var(--card);padding:18px 0;font-size:24px;border-radius:12px}
+.pad .ok{background:var(--accent);color:#0b0d12}
+.route{margin:6px 0;padding-left:22px}
+.pair{display:flex;justify-content:space-between;gap:12px;background:var(--card);padding:12px 14px;border-radius:12px;margin-bottom:6px}
+.loc{font-size:24px;font-weight:700;text-align:center;margin:24px 0 4px}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.opts button{background:var(--card);padding:18px 8px;border-radius:12px;font-weight:600;border:2px solid transparent}
+.opts button.good{border-color:var(--good);background:var(--card)}
+.opts button.bad{border-color:var(--bad);background:var(--card)}
+.boxes{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.box{background:var(--card);border-radius:12px;padding:10px 0;display:flex;flex-direction:column;align-items:center}
+.box b{font-size:20px}
+.crow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.x{background:none;color:var(--muted);font-size:18px;padding:6px}
+details{margin-top:12px}summary{padding:10px 0;color:var(--muted)}
+.flash{background:var(--card);border-radius:16px;padding:28px 18px;text-align:center;min-height:180px;display:flex;flex-direction:column;justify-content:center;gap:16px;margin-top:12px}
+.ff{font-size:20px;font-weight:600}.fb{font-size:18px;color:var(--accent)}
+.hidden{display:none}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+input,textarea{width:100%;font:inherit;color:var(--text);background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:10px;margin-top:8px}
+.statgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stat{background:var(--card);border-radius:12px;padding:12px;display:flex;flex-direction:column}
+.stat b{font-size:22px}.stat span{color:var(--muted);font-size:13px}
+.chart{display:flex;gap:4px;height:110px;align-items:flex-end;background:var(--card);border-radius:12px;padding:10px}
+.col{flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px}
+.col i{display:block;width:100%;background:var(--card2);border-radius:4px;min-height:3px}
+.col i.ok{background:var(--accent)}
+.col span{font-size:10px;color:var(--muted)}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--text);color:var(--bg);padding:10px 16px;border-radius:99px;font-weight:600;opacity:0;transition:opacity .2s;pointer-events:none;z-index:9}
+.toast.on{opacity:1}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="toast" id="toast"></div>
+<script>
+const EMOJI=['🍎','🍌','🍇','🍋','🍓','🥕','🌽','🍞','🧀','🥚','🍕','🍩','☕','🍵','🥤','🍷','🔑','🔒','🔨','✂️','📎','📌','✏️','📏','📐','📚','📓','📷','📱','💻','⌚','⏰','💡','🔦','🕯️','🧭','🎒','👓','🕶️','🧢','👟','🧤','🧣','👑','💍','💎','🎸','🎺','🥁','🎲','🧩','🎯','⚽','🏀','🎾','🏓','🎈','🎁','🧸','🌵','🌻','🌹','🍄','🐚','🧲','🔋','🧯','🧴','🧼','🧽','🛏️','🚪','🖼️','🧺','☂️','⚓','🚲','🛴','🚗','✈️','🚀','⛵','🐟','🦋','🐢','🐝','🦉','🐸','🦀','🍉','🥑','🌶️','🧁','🎻','📺','🔔','🪑','🧳'];
+const WORDS=['anchor','balloon','banana','barrel','bicycle','blanket','bottle','bucket','butterfly','cactus','camel','candle','canoe','carpet','castle','chainsaw','cheese','chimney','clock','cloud','coconut','compass','cookie','crown','cucumber','diamond','dinosaur','dolphin','donkey','dragon','drum','eagle','elephant','envelope','feather','fireworks','flag','flamingo','football','fountain','frog','giraffe','glove','goat','guitar','hammer','hammock','helicopter','honey','horse','iceberg','igloo','jellyfish','kangaroo','kettle','ladder','lantern','lemon','lighthouse','lion','lobster','magnet','mailbox','mirror','monkey','motorcycle','mushroom','necklace','octopus','onion','owl','paintbrush','panda','parachute','parrot','peanut','penguin','piano','pickle','pillow','pineapple','pirate','pizza','popcorn','pumpkin','rabbit','rainbow','robot','rocket','sandwich','saxophone','scarecrow','shark','skateboard','snowman','spider','sponge','submarine','sunflower','sword','taco','telescope','tiger','toaster','tornado','tractor','trumpet','turtle','umbrella','unicorn','vacuum','violin','volcano','waffle','walrus','watermelon','whale','windmill','wizard','zebra'];
+const STARTER=[
+ ['What is the method of loci?','Placing vivid images along a familiar route, then walking it in your mind to recall them.'],
+ ['Why do strange images stick better?','Your brain prioritizes things that are unusual, emotional, funny or sensory.'],
+ ['What is chunking?','Grouping items into bigger meaningful units, like 3-3-4 for a phone number.'],
+ ['Active recall vs re-reading?','Testing yourself beats re-reading for long-term memory.'],
+ ['When does memory consolidation mostly happen?','During sleep.'],
+ ['In the Leitner system, where does a missed card go?','Back to box 1.']
+];
+const QUESTS=[
+ ['kim',"Kim's Game",'Spot and recall objects','👁️'],
+ ['digits','Number Drill','Hold digits in order','🔢'],
+ ['palace','Memory Palace','Place words on your route','🏛️'],
+ ['cards','Flashcards','Leitner review','🗂️'],
+ ['recall','Evening Recall','Replay your day','🌙']
+];
+const INT={1:1,2:2,3:4,4:8,5:16};
+const DEF={xp:0,days:{},best:{kim:0,digits:0,palace:0},kimLv:1,digitLen:5,palaceLv:1,cards:null,
+ route:['Front door','Doormat','Coat hook','Couch','TV','Kitchen sink','Fridge','Stove','Bed','Window'],streak:0,streakDay:null};
+
+const $=s=>document.querySelector(s);
+const app=$('#app');
+let S=load(), timer=null, tmo=null, K, D, P, C;
+
+function load(){let s=null;try{s=JSON.parse(localStorage.getItem('memory-dojo'))}catch(e){}const d=JSON.parse(JSON.stringify(DEF));if(!s)return d;const m=Object.assign(d,s);m.best=Object.assign({kim:0,digits:0,palace:0},s.best||{});return m}
+function save(){try{localStorage.setItem('memory-dojo',JSON.stringify(S))}catch(e){}}
+function today(){return new Date().toLocaleDateString('en-CA')}
+function addDays(str,n){const d=new Date(str+'T12:00:00');d.setDate(d.getDate()+n);return d.toLocaleDateString('en-CA')}
+function day(){const k=today();S.days[k]=S.days[k]||{};return S.days[k]}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function sample(a,n){return shuffle([...a]).slice(0,n)}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+function chunk(s){return (s.match(/.{1,3}/g)||[]).join(' ')}
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),1800)}
+function clearT(){if(timer){clearInterval(timer);timer=null}if(tmo){clearTimeout(tmo);tmo=null}}
+function header(t){return `<div class="top"><button class="back" onclick="go('home')">‹ Back</button><h2>${t}</h2></div>`}
+function isStandalone(){return window.matchMedia('(display-mode: standalone)').matches||navigator.standalone===true}
+
+function level(){let x=S.xp,l=1;while(x>=l*100){x-=l*100;l++}return{l,cur:x,need:l*100}}
+function addXP(n){if(!n)return;const b=level().l;S.xp+=n;save();const a=level().l;if(a>b)toast('Level '+a+'!')}
+function curStreak(){return (S.streakDay===today()||S.streakDay===addDays(today(),-1))?S.streak:0}
+function complete(q,data){
+ const d=day();d[q]=data;
+ if(Object.keys(d).length>=3&&S.streakDay!==today()){
+  S.streak=S.streakDay===addDays(today(),-1)?S.streak+1:1;S.streakDay=today();
+  setTimeout(()=>toast('Streak: '+S.streak+(S.streak===1?' day':' days')),1000);
+ }
+ save();
+}
+function dueCards(){const t=today();return S.cards.filter(c=>c.due<=t)}
+
+function go(s){clearT();window.scrollTo(0,0);({home,kim:kimStart,digits:digStart,palace:palHome,cards:cardHome,recall:recallHome,stats})[s]()}
+
+/* Home */
+function home(){
+ const lv=level(),d=day(),done=QUESTS.filter(q=>d[q[0]]).length;
+ app.innerHTML=`
+ <div class="hero"><div><div class="muted small">Level ${lv.l}</div><div class="h1">Memory Dojo</div></div><div class="streak">🔥 ${curStreak()}</div></div>
+ <div class="bar"><i style="width:${lv.cur/lv.need*100}%"></i></div>
+ <div class="muted small">${lv.cur} / ${lv.need} XP to level ${lv.l+1}</div>
+ <div class="sect">Today: ${done}/5 ${done>=3?'· streak kept':'· do 3 to keep your streak'}</div>
+ ${QUESTS.map(([k,t,s,i])=>`<button class="quest ${d[k]?'done':''}" onclick="go('${k}')"><span class="qi">${i}</span><span class="qt"><b>${t}</b><span class="muted small">${s}${k==='cards'?' · '+dueCards().length+' due':''}</span></span><span class="qc">${d[k]?'✓':'›'}</span></button>`).join('')}
+ <button class="ghost" onclick="go('stats')">Stats</button>
+ ${isStandalone()?'':'<p class="muted small center">Install it: open your browser menu or Share button and choose Add to Home Screen.</p>'}`;
+}
+
+/* Kim's Game */
+function kimStart(){
+ const n=Math.min(5+S.kimLv,20),secs=Math.max(10,32-2*S.kimLv);
+ K={n,secs,items:sample(EMOJI,n),sel:new Set()};
+ app.innerHTML=`${header("Kim's Game")}
+ <p>Level ${S.kimLv}: <b>${n} objects</b>, <b>${secs} seconds</b>.</p>
+ <p class="muted">Study the grid. Name each object in your head and link a few together into a quick story. Then pick them out from a mixed set.</p>
+ <button class="primary" onclick="kimShow()">Start</button>`;
+}
+function kimShow(){
+ let left=K.secs;
+ app.innerHTML=`${header("Kim's Game")}
+ <div class="timer"><i id="tb" style="width:100%"></i></div><div class="muted center" id="tl">${left}s</div>
+ <div class="grid">${K.items.map(e=>`<div class="tile">${e}</div>`).join('')}</div>
+ <button class="primary" onclick="kimRecall()">I'm ready</button>`;
+ timer=setInterval(()=>{left--;const tb=$('#tb');if(tb){tb.style.width=(left/K.secs*100)+'%';$('#tl').textContent=left+'s'}if(left<=0)kimRecall()},1000);
+}
+function kimRecall(){
+ clearT();
+ K.pool=shuffle([...K.items,...sample(EMOJI.filter(e=>!K.items.includes(e)),K.n)]);
+ app.innerHTML=`${header("Kim's Game")}
+ <p>Tap every object you saw. <span class="muted" id="selc">0 selected</span></p>
+ <div class="grid">${K.pool.map((e,i)=>`<button class="tile" onclick="kimTog(${i},this)">${e}</button>`).join('')}</div>
+ <button class="primary" onclick="kimDone()">Check</button>`;
+}
+function kimTog(i,el){const e=K.pool[i];K.sel.has(e)?K.sel.delete(e):K.sel.add(e);el.classList.toggle('sel');$('#selc').textContent=K.sel.size+' selected'}
+function kimDone(){
+ const hit=K.items.filter(e=>K.sel.has(e)).length,wrong=[...K.sel].filter(e=>!K.items.includes(e)).length;
+ const score=Math.max(0,hit-wrong),acc=score/K.n;let msg;
+ if(acc>=.8){S.kimLv++;msg='Level up. Next round has more objects and less time.'}
+ else if(acc<.5&&S.kimLv>1){S.kimLv--;msg='Dropping a level to rebuild.'}
+ else msg='Same level next time. Hit 80% to level up.';
+ const xp=score*3;addXP(xp);S.best.kim=Math.max(S.best.kim,score);complete('kim',{score,n:K.n});
+ app.innerHTML=`${header("Kim's Game")}
+ <div class="result"><div class="big">${hit}/${K.n}</div><div class="muted">found · ${wrong} wrong picks · +${xp} XP</div><p>${msg}</p></div>
+ <div class="grid">${K.pool.map(e=>{const a=K.items.includes(e),s=K.sel.has(e);return `<div class="tile ${a&&s?'good':!a&&s?'bad':a?'miss':'dim'}">${e}</div>`}).join('')}</div>
+ <p class="muted small">Green: found. Red: wasn't there. Dashed: missed.</p>
+ <button class="primary" onclick="go('kim')">Play again</button><button class="ghost" onclick="go('home')">Done</button>`;
+}
+
+/* Number Drill */
+function digStart(){
+ D={round:0,rounds:3,res:[]};
+ app.innerHTML=`${header('Number Drill')}
+ <p>Current length: <b>${S.digitLen} digits</b>. Three rounds.</p>
+ <p class="muted">Read them in groups of three, or turn pairs into images (07 = a spy, 23 = a basketball jersey). Get it right and the next one gets longer.</p>
+ <button class="primary" onclick="digShow()">Start</button>`;
+}
+function digShow(){
+ D.num=Array.from({length:S.digitLen},()=>Math.floor(Math.random()*10)).join('');D.inp='';
+ const ms=S.digitLen*700+1000;let left=ms;
+ app.innerHTML=`${header('Number Drill')}<div class="muted center">Round ${D.round+1} of ${D.rounds}</div>
+ <div class="digits">${chunk(D.num)}</div><div class="timer"><i id="tb" style="width:100%"></i></div>`;
+ timer=setInterval(()=>{left-=100;const tb=$('#tb');if(tb)tb.style.width=Math.max(0,left/ms*100)+'%';if(left<=0){clearT();digInput()}},100);
+}
+function digInput(){
+ app.innerHTML=`${header('Number Drill')}<div class="muted center">Type the ${D.num.length} digits</div>
+ <div class="digits" id="di">&nbsp;</div>
+ <div class="pad">${[1,2,3,4,5,6,7,8,9].map(n=>`<button onclick="digKey('${n}')">${n}</button>`).join('')}<button onclick="digKey('del')">⌫</button><button onclick="digKey('0')">0</button><button class="ok" onclick="digKey('ok')">✓</button></div>`;
+}
+function digKey(k){
+ if(k==='ok')return digCheck();
+ if(k==='del')D.inp=D.inp.slice(0,-1);else if(D.inp.length<D.num.length)D.inp+=k;
+ $('#di').innerHTML=D.inp?chunk(D.inp):'&nbsp;';
+}
+function digCheck(){
+ const ok=D.inp===D.num,len=D.num.length;D.res.push({len,ok});D.round++;
+ if(ok){S.digitLen++;S.best.digits=Math.max(S.best.digits,len);addXP(len*2)}else if(S.digitLen>3)S.digitLen--;
+ save();
+ const last=D.round>=D.rounds;
+ if(last)complete('digits',{best:Math.max(0,...D.res.filter(r=>r.ok).map(r=>r.len))});
+ app.innerHTML=`${header('Number Drill')}
+ <div class="result"><div class="big ${ok?'g':'r'}">${ok?'Correct':'Not quite'}</div>
+ <div class="digits small">${chunk(D.num)}</div>${ok?'':`<div class="muted">You typed: ${D.inp?chunk(D.inp):'nothing'}</div>`}
+ <p class="muted">Next length: ${S.digitLen}</p></div>
+ ${last?`<div class="card center">Session done: ${D.res.filter(r=>r.ok).length}/${D.rounds} correct</div><button class="primary" onclick="go('digits')">Play again</button><button class="ghost" onclick="go('home')">Done</button>`:`<button class="primary" onclick="digShow()">Next round</button>`}`;
+}
+
+/* Memory Palace */
+function palCount(){return Math.min(S.route.length,4+S.palaceLv)}
+function palHome(){
+ const n=palCount();
+ app.innerHTML=`${header('Memory Palace')}
+ <p>Level ${S.palaceLv}: <b>${n} words</b> on your route.</p>
+ <p class="muted">At each spot, picture the word doing something strange, loud or funny. A walrus blocking the front door. A pizza stuck to the doormat.</p>
+ <div class="card"><div class="sect" style="margin-top:0">Your route</div><ol class="route">${S.route.map(r=>`<li>${esc(r)}</li>`).join('')}</ol>
+ <button class="ghost" onclick="palEdit()">Edit route</button></div>
+ <button class="primary" onclick="palStudy()">Start</button>`;
+}
+function palEdit(){
+ app.innerHTML=`${header('Edit route')}
+ <p class="muted">One spot per line, in walking order. Use a place you know well, like your home or your walk to a shop. At least 5 spots.</p>
+ <textarea id="rt" rows="12">${esc(S.route.join('\n'))}</textarea>
+ <button class="primary" onclick="palSave()">Save</button><button class="ghost" onclick="go('palace')">Cancel</button>`;
+}
+function palSave(){const r=$('#rt').value.split('\n').map(s=>s.trim()).filter(Boolean);if(r.length<5)return toast('Add at least 5 spots');S.route=r.slice(0,40);save();toast('Route saved');go('palace')}
+function palStudy(){
+ const n=palCount(),words=sample(WORDS,n);
+ P={items:S.route.slice(0,n).map((loc,i)=>({loc,word:words[i]})),i:0,right:0,wrong:[],locked:false};
+ app.innerHTML=`${header('Memory Palace')}
+ <p class="muted">Walk the route and build an image at each spot. No timer, take your time.</p>
+ ${P.items.map((p,i)=>`<div class="pair"><span class="muted">${i+1}. ${esc(p.loc)}</span><b>${p.word}</b></div>`).join('')}
+ <button class="primary" onclick="palAsk()">I've placed them all</button>`;
+}
+function palAsk(){
+ const it=P.items[P.i],others=P.items.filter(p=>p!==it).map(p=>p.word);
+ const fromRound=sample(others,Math.min(2,others.length));
+ const fill=sample(WORDS.filter(w=>w!==it.word&&!fromRound.includes(w)),3-fromRound.length);
+ P.opts=shuffle([it.word,...fromRound,...fill]);
+ app.innerHTML=`${header('Memory Palace')}<div class="muted center">${P.i+1} of ${P.items.length}</div>
+ <div class="loc">${esc(it.loc)}</div><p class="center muted">What did you leave here?</p>
+ <div class="opts">${P.opts.map((o,j)=>`<button onclick="palPick(${j},this)">${o}</button>`).join('')}</div>`;
+}
+function palPick(j,el){
+ if(P.locked)return;P.locked=true;
+ const it=P.items[P.i],ok=P.opts[j]===it.word;
+ if(ok)P.right++;else P.wrong.push(it);
+ el.classList.add(ok?'good':'bad');
+ if(!ok)document.querySelectorAll('.opts button').forEach(b=>{if(b.textContent===it.word)b.classList.add('good')});
+ tmo=setTimeout(()=>{P.locked=false;P.i++;P.i<P.items.length?palAsk():palDone()},ok?450:1200);
+}
+function palDone(){
+ const n=P.items.length,acc=P.right/n;let msg;
+ if(acc>=.8){if(n<S.route.length){S.palaceLv++;msg='Level up. One more word next time.'}else msg='Maxed out your route. Add more spots to go further.'}
+ else if(acc<.5&&S.palaceLv>1){S.palaceLv--;msg='Dropping a level.'}
+ else msg='Same level next time. Hit 80% to level up.';
+ const xp=P.right*4;addXP(xp);S.best.palace=Math.max(S.best.palace,P.right);complete('palace',{score:P.right,n});
+ app.innerHTML=`${header('Memory Palace')}
+ <div class="result"><div class="big">${P.right}/${n}</div><div class="muted">+${xp} XP</div><p>${msg}</p></div>
+ ${P.wrong.length?`<div class="sect">Review these</div>${P.wrong.map(p=>`<div class="pair"><span class="muted">${esc(p.loc)}</span><b>${p.word}</b></div>`).join('')}`:''}
+ <button class="primary" onclick="go('palace')">Play again</button><button class="ghost" onclick="go('home')">Done</button>`;
+}
+
+/* Flashcards (Leitner) */
+function cardHome(){
+ const due=dueCards(),boxes=[1,2,3,4,5].map(b=>S.cards.filter(c=>c.box===b).length);
+ if(S.cards.length&&!due.length&&!day().cards)complete('cards',{reviewed:0});
+ app.innerHTML=`${header('Flashcards')}
+ <div class="boxes">${boxes.map((n,i)=>`<div class="box"><b>${n}</b><span class="muted small">Box ${i+1}</span></div>`).join('')}</div>
+ <p class="muted small">Box 1 comes back daily, then every 2, 4, 8 and 16 days. Miss a card and it drops back to box 1.</p>
+ ${due.length?`<button class="primary" onclick="cardReview()">Review ${due.length} due</button>`:`<div class="card center">${S.cards.length?'All caught up for today.':'No cards yet. Add some below.'}</div>`}
+ <div class="card"><div class="sect" style="margin-top:0">Add a card</div>
+ <input id="cf" placeholder="Front (question)"><textarea id="cb" rows="2" placeholder="Back (answer)"></textarea>
+ <button class="ghost" onclick="cardAdd()">Add card</button></div>
+ <details><summary>All cards (${S.cards.length})</summary>
+ ${S.cards.map(c=>`<div class="crow"><div><b>${esc(c.f)}</b><div class="muted small">${esc(c.b)}<br>Box ${c.box} · due ${c.due}</div></div><button class="x" onclick="cardDel('${c.id}')">✕</button></div>`).join('')}</details>`;
+}
+function cardAdd(){const f=$('#cf').value.trim(),b=$('#cb').value.trim();if(!f||!b)return toast('Fill in both sides');S.cards.push({id:uid(),f,b,box:1,due:today()});save();toast('Card added');go('cards')}
+function cardDel(id){if(!confirm('Delete this card?'))return;S.cards=S.cards.filter(c=>c.id!==id);save();go('cards')}
+function cardReview(){C={q:shuffle(dueCards()),i:0,right:0,miss:0};cardShow()}
+function cardShow(){
+ const c=C.q[C.i];
+ app.innerHTML=`${header('Flashcards')}<div class="muted center">${C.i+1} of ${C.q.length} · box ${c.box}</div>
+ <div class="flash"><div class="ff">${esc(c.f)}</div><div id="ans" class="fb hidden">${esc(c.b)}</div></div>
+ <div id="act"><p class="muted small center">Say the answer out loud first, then check.</p><button class="primary" onclick="cardReveal()">Show answer</button></div>`;
+}
+function cardReveal(){$('#ans').classList.remove('hidden');$('#act').innerHTML=`<div class="two"><button class="bad" onclick="cardGrade(false)">Missed</button><button class="good" onclick="cardGrade(true)">Got it</button></div>`}
+function cardGrade(ok){
+ const c=C.q[C.i];
+ if(ok){c.box=Math.min(5,c.box+1);C.right++}else{c.box=1;C.miss++}
+ c.due=addDays(today(),INT[c.box]);save();C.i++;
+ if(C.i<C.q.length)return cardShow();
+ const xp=C.right*2+C.miss;addXP(xp);complete('cards',{reviewed:C.q.length,right:C.right});
+ app.innerHTML=`${header('Flashcards')}
+ <div class="result"><div class="big">${C.right}/${C.q.length}</div><div class="muted">remembered · +${xp} XP</div><p>Missed cards come back tomorrow.</p></div>
+ <button class="primary" onclick="go('cards')">Back to cards</button><button class="ghost" onclick="go('home')">Done</button>`;
+}
+
+/* Evening Recall */
+function recallHome(){
+ const d=day(),y=S.days[addDays(today(),-1)];
+ app.innerHTML=`${header('Evening Recall')}
+ <p class="muted">Close your eyes and replay today in order, from waking up until now. Then write one moment per line. Details count: what you ate, who you talked to, what you saw.</p>
+ ${y&&y.recall&&y.recall.fuzzy?`<div class="card"><div class="muted small">Yesterday you wanted to notice more of:</div>${esc(y.recall.fuzzy)}</div>`:''}
+ <textarea id="rc" rows="10" placeholder="Woke up at 7, checked phone&#10;Coffee and eggs&#10;...">${esc(d.recall?d.recall.text:'')}</textarea>
+ <p class="muted small">What felt fuzzy? Pay attention to that tomorrow.</p>
+ <textarea id="rf" rows="3">${esc(d.recall?d.recall.fuzzy:'')}</textarea>
+ <button class="primary" onclick="recallSave()">Save</button>`;
+}
+function recallSave(){
+ const text=$('#rc').value,fuzzy=$('#rf').value.trim(),lines=text.split('\n').filter(l=>l.trim()).length;
+ if(lines<3)return toast('Write at least 3 moments');
+ const first=!day().recall;complete('recall',{text,fuzzy,lines});
+ if(first)addXP(Math.min(30,5+lines*2));
+ toast('Saved');go('home');
+}
+
+/* Stats */
+function stats(){
+ const lv=level(),days=[...Array(14)].map((_,i)=>addDays(today(),i-13));
+ const full=Object.values(S.days).filter(d=>Object.keys(d).length>=3).length;
+ app.innerHTML=`${header('Stats')}
+ <div class="statgrid">
+ <div class="stat"><b>${lv.l}</b><span>Level</span></div><div class="stat"><b>${S.xp}</b><span>Total XP</span></div>
+ <div class="stat"><b>${curStreak()}</b><span>Current streak</span></div><div class="stat"><b>${full}</b><span>Days with 3+ done</span></div>
+ <div class="stat"><b>${S.best.kim}</b><span>Best Kim's score</span></div><div class="stat"><b>${S.best.digits}</b><span>Most digits</span></div>
+ <div class="stat"><b>${S.best.palace}</b><span>Best palace score</span></div><div class="stat"><b>${S.cards.length}</b><span>Flashcards</span></div></div>
+ <div class="sect">Last 14 days</div>
+ <div class="chart">${days.map(k=>{const n=Object.keys(S.days[k]||{}).length;return `<div class="col"><i class="${n>=3?'ok':''}" style="height:${n/5*100}%"></i><span>${k.slice(8)}</span></div>`}).join('')}</div>
+ <div class="sect">Current difficulty</div>
+ <p class="muted">Kim's level ${S.kimLv} · ${S.digitLen} digits · palace level ${S.palaceLv}</p>
+ <div class="sect">Backup</div>
+ <p class="muted small">Progress is saved on this device only. Export a backup now and then.</p>
+ <button class="ghost" onclick="exportData()">Export backup</button>
+ <button class="ghost" onclick="$('#imp').click()">Import backup</button>
+ <input type="file" id="imp" accept="application/json" class="hidden" onchange="importData(this)">
+ <button class="ghost danger" onclick="resetAll()">Reset all progress</button>`;
+}
+function exportData(){const b=new Blob([JSON.stringify(S)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='memory-dojo-'+today()+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+function importData(inp){const f=inp.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(typeof d.xp!=='number')throw 0;localStorage.setItem('memory-dojo',JSON.stringify(d));S=load();toast('Backup restored');go('home')}catch(e){toast('That file is not a valid backup')}};r.readAsText(f)}
+function resetAll(){if(!confirm('Erase all progress, cards and stats?'))return;S=JSON.parse(JSON.stringify(DEF));S.cards=STARTER.map(([f,b])=>({id:uid(),f,b,box:1,due:today()}));save();go('home')}
+
+if(!S.cards){S.cards=STARTER.map(([f,b])=>({id:uid(),f,b,box:1,due:today()}));save()}
+go('home');
+if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+</script>
+</body>
+</html>

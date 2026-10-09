@@ -1,0 +1,15 @@
+{
+  "name": "Memory Dojo",
+  "short_name": "Memory Dojo",
+  "description": "Daily memory training: Kim's game, number drills, memory palace, Leitner flashcards and evening recall.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f1115",
+  "theme_color": "#0f1115",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
